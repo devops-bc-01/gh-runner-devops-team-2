@@ -1,0 +1,14 @@
+{
+    "vm_image": "ubuntu/jammy64",
+
+    "runner_repo": "",
+    "runner_token": "",
+
+    "docker_node_count": 1,
+
+    "docker_ram":"1024",
+    "docker_cpus": "1",
+    
+    "podman_ram": "",
+    "podman_cpus": ""
+}

@@ -1,7 +1,7 @@
 {
     "vm_image": "ubuntu/jammy64",
 
-    "runner_repo": "",
+    "runner_repo": "https://github.com/devops-bc-01/gh-runner-devops-team-2/",
     "runner_token": "",
 
     "docker_node_count": 1,

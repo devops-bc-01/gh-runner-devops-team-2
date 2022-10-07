@@ -1,0 +1,98 @@
+version: '3.3'
+
+services:
+  sonarqube:
+    image: sonarqube:latest
+    container_name: sonarqube
+    depends_on:
+      - db
+    environment:
+      SONAR_JDBC_URL: jdbc:postgresql://db:5432/sonar
+      SONAR_JDBC_USERNAME: ${SONAR_JDBC_USERNAME}
+      SONAR_JDBC_PASSWORD: ${SONAR_JDBC_PASSWORD}
+    volumes:
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_extensions:/opt/sonarqube/extensions
+      - sonarqube_logs:/opt/sonarqube/logs
+      - docker_sock:/var/run/docker.sock
+    networks:
+      - devops-runner-network-team-02
+    ports:
+      - "3000:80"
+  
+  db:
+    image: postgres:alpine
+    container_name: postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql
+      - postgresql_data:/var/lib/postgresql/data
+      - docker_sock:/var/run/docker.sock
+    networks:
+      - devops-runner-network-team-02
+  
+  jenkins:
+    image: jenkins/jenkins:lts
+    container_name: jenkins
+    privileged: true
+    user: root
+    depends_on:
+      - sonarqube
+    volumes:
+      - jenkins_configuration:/var/jenkins_home
+      - docker_sock:/var/run/docker.sock
+    networks:
+      - devops-runner-network-team-02
+    ports:
+      - "3001:8080"
+
+  nexus:
+    image: sonatype/nexus3
+    container_name: nexus
+    depends_on:
+      - jenkins
+    volumes:
+      - nexus_data:/sonatype-work
+      - docker_sock:/var/run/docker.sock
+    networks:
+      - devops-runner-network-team-02
+    ports:
+      - "3002:80"
+  
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: portainer
+    security_opt:
+      - no-new-privileges:true
+    depends_on:
+      - nexus
+    volumes:
+      - portainer_localtime:/etc/localtime:ro
+      - docker_sock:/var/run/docker.sock:ro
+      - portainer_data:/data
+    networks:
+      - devops-runner-network-team-02
+    ports:
+      - 3003:9000
+      
+volumes:
+
+  sonarqube_data:
+  sonarqube_extensions:
+  sonarqube_logs:
+  
+  postgres_data:
+  postgresql_data:
+  docker_sock:
+  
+  jenkins_configuration:
+  nexus_data:
+
+  portainer_localtime:
+  portainer_data:
+
+networks:
+  devops-runner-network-team-02:
+    driver: bridge

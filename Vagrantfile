@@ -91,10 +91,15 @@ Vagrant.configure(2) do |config|
         node.vm.provision "file", source: "./docker-compose.yaml", destination: "$HOME/docker-compose.yaml"
         node.vm.provision :docker
         node.vm.provision :docker_compose
-        config.vm.provision "shell", path: "./scripts/docker.sh"
-        end
+
+      end
+      
       if nid == 1
-        config.vm.provision "shell", path: "./scripts/podman.sh"
+        node.vm.provision "shell", inline: <<-SHELL
+          sudo apt-get -y update
+          sudo apt-get -y install podman
+        SHELL
+
       end
     end
 

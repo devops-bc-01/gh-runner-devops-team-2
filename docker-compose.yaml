@@ -72,6 +72,7 @@ services:
       - portainer_localtime:/etc/localtime:ro
       - docker_sock:/var/run/docker.sock:ro
       - portainer_data:/data
+
     networks:
       - devops-runner-network-team-02
     ports:
@@ -92,6 +93,7 @@ volumes:
 
   portainer_localtime:
   portainer_data:
+
 
 networks:
   devops-runner-network-team-02:

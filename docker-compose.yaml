@@ -67,6 +67,16 @@ services:
       - devops-runner-network-team-02
     ports:
       - 3003:9000
+      
+volumes:
+
+  sonarqube_data:
+  sonarqube_extensions:
+  sonarqube_logs:
+  
+  postgres_data:
+  postgresql_data:
+  docker_sock:
   
 volumes:
   sonarqube_extensions:

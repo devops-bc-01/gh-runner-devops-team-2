@@ -91,11 +91,13 @@ Vagrant.configure(2) do |config|
           sudo sysctl -p
         SHELL
       end
+      
       if nid == 1
         node.vm.provision "shell", inline: <<-SHELL
           sudo apt-get -y update
           sudo apt-get -y install podman
         SHELL
+
       end
     end
 

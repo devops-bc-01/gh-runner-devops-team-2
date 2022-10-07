@@ -8,7 +8,7 @@ nodes = [
   {
     :node => "devops-runner-team-02-00",
     :cpu => 4,
-    :mem => 4056
+    :mem => 8024
   },
   {
     :node => "devops-runner-team-02-01",
@@ -20,8 +20,8 @@ nodes = [
 port_forwards = [
   {
     :node => "devops-runner-team-02-00",
-    :guest => 3000,
-    :host => 8080
+    :guest => 3004,
+    :host => 8084
   },
   {
     :node => "devops-runner-team-02-00",
@@ -37,11 +37,6 @@ port_forwards = [
     :node => "devops-runner-team-02-00",
     :guest => 3003,
     :host => 8083
-  },
-  {
-    :node => "devops-runner-team-02-00",
-    :guest => 3004,
-    :host => 8084
   }
 ]
 
@@ -52,6 +47,7 @@ Vagrant.configure(2) do |config|
 
     config.env.enable
     config.ssh.insert_key = false
+    config.vm.synced_folder '.', '/vagrant', owner: 'vagrant', group: 'root'
     config.vm.define "devops-runner-team-02-0#{nid}" do |node|
       nodes.each do |cust_box|
         if cust_box[:node] == "devops-runner-team-02-0#{nid}"
@@ -87,10 +83,13 @@ Vagrant.configure(2) do |config|
       end
       if nid == 0
         node.vm.network "forwarded_port", guest: 3000, host: 8080
-        node.vm.provision "file", source: "./containers", destination: "$HOME/"
         node.vm.provision "file", source: "./docker-compose.yaml", destination: "$HOME/docker-compose.yaml"
         node.vm.provision :docker
         node.vm.provision :docker_compose
+        node.vm.provision "shell", inline: <<-SHELL
+          sudo echo "vm.max_map_count=262144" > /etc/sysctl.conf
+          sudo sysctl -p
+        SHELL
       end
       if nid == 1
         node.vm.provision "shell", inline: <<-SHELL

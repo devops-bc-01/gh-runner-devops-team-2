@@ -39,32 +39,30 @@ runner_decompress() {
 }
 
 runner_config() {
-    if [ ! -f ./.runner ]; then
-        ./config.sh --url $GITHUB_URL --token $GITHUB_TOKEN --unattended --name $RUNNER_NAME --labels DevOps
+    if [ ! -f .runner ]; then
+        if [ -f ./svc.sh ]; then
+            sudo ./svc.sh uninstall
+        fi
+        ./config.sh remove
+        ./config.sh --replace --url $GITHUB_URL --token $GITHUB_TOKEN --unattended --name $RUNNER_NAME --labels DevOps
         echo "Configuring runner"
     else
+        sudo ./svc.sh uninstall
         rm -rf .runner
         rm -rf .credentials
         ./config.sh --replace --url $GITHUB_URL --token $GITHUB_TOKEN --unattended --name $RUNNER_NAME --labels DevOps
-        echo "Re-configuring runner"
+        echo "Runner already configured"
     fi
 }
 
 svc_install() {
     if [ ! -f ./svc.sh ]; then
-        if [ $(sudo ./svc.sh status | grep 'not installed') ]; then
-            sudo ./svc.sh install
-        else
-            echo "Services already installed"
-        fi
-    else
         echo "No runner configured yet, svc.sh file doesn't exists"
+    elif [ "$(sudo ./svc.sh status | grep "not installed")" ]; then
+            sudo ./svc.sh install
+    else
+        echo "Services already installed"
     fi
-    # if [ $(systemctl list-unit-files --type service --all | grep -w 'actions.runner') ]; then
-    #     echo "Services already installed"
-    # else
-    #     sudo ./svc.sh install
-    # fi
 }
 
 create_runner_dir

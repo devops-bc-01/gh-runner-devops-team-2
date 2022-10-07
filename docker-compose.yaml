@@ -2,45 +2,43 @@ version: '3.3'
 
 services:
   sonarqube:
-    image: sonarqube:latest
+    image: sonarqube:community
     container_name: sonarqube
     depends_on:
       - db
     environment:
-      SONAR_JDBC_URL: jdbc:postgresql://db:5432/sonar
-      SONAR_JDBC_USERNAME: ${SONAR_JDBC_USERNAME}
-      SONAR_JDBC_PASSWORD: ${SONAR_JDBC_PASSWORD}
+      SONAR_JDBC_URL: "${SONAR_JDBC_URL}"
+      SONAR_JDBC_USERNAME: "${SONAR_JDBC_USERNAME}"
+      SONAR_JDBC_PASSWORD: "${SONAR_JDBC_PASSWORD}"
+
     volumes:
-      - ./containers/sonarqube/data:/opt/sonarqube/data
-      - ./containers/sonarqube/extensions:/opt/sonarqube/extensions
-      - ./containers/sonarqube/logs:/opt/sonarqube/logs
-      - /var/run/docker.sock:/var/run/docker.sock
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_extensions:/opt/sonarqube/extensions
+      - sonarqube_logs:/opt/sonarqube/logs
     networks:
       - devops-runner-network-team-02
     ports:
-      - "3000:80"
+      - "3004:9000"
   
   db:
-    image: postgres:alpine
-    container_name: postgres
+    image: postgres:12
+    container_name: postgresql
     environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_USER: "${POSTGRES_USER}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
     volumes:
-      - ./containers/postgresql/conf:/var/lib/postgresql
-      - ./containers/postgresql/data:/var/lib/postgresql/data
-      - /var/run/docker.sock:/var/run/docker.sock
+      - postgresql:/var/lib/postgresql
+      - postgresql_data:/var/lib/postgresql/data
     networks:
       - devops-runner-network-team-02
   
   jenkins:
     image: jenkins/jenkins:lts
     container_name: jenkins
-    privileged: true
-    user: root
     volumes:
-      - ./containers/jenkins_compose/jenkins_configuration:/var/jenkins_home
+      - jenkins:/var/jenkins_home
       - /var/run/docker.sock:/var/run/docker.sock
+      - /usr/local/bin/docker:/usr/local/bin/docker
     networks:
       - devops-runner-network-team-02
     ports:
@@ -49,35 +47,36 @@ services:
   nexus:
     image: sonatype/nexus3
     container_name: nexus
+    restart: always
     volumes:
-      - ./containers/nexus-data:/sonatype-work
+      - nexus-data:/sonatype-work sonatype/nexus
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - devops-runner-network-team-02
     ports:
-      - "3002:80"
+      - "3002:8081"
   
   portainer:
     image: portainer/portainer-ce:latest
     container_name: portainer
-    security_opt:
-      - no-new-privileges:true
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./containers/portainer-data:/data
+      - portainer-data:/data
     networks:
       - devops-runner-network-team-02
     ports:
       - 3003:9000
   
-  # init:
-  #     image: bash
-  #     privileged: true
-  #     user: root
-  #     volumes:
-  #       - ./containers/init.sh:/mnt/init.sh
-  #     command: ["sh", "-e", "/mnt/init.sh"]
+volumes:
+  sonarqube_extensions:
+  sonarqube_logs:
+  sonarqube_data:
+  postgresql:
+  postgresql_data:
+  jenkins:
+  nexus-data:
+  portainer-data:
 
 networks:
   devops-runner-network-team-02:

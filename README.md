@@ -24,3 +24,5 @@ Nexus (port 8082)
 Portainer (port 8083)
 Sonarqube (port 8084)
 ```
+
+### Finally you need to setup postgres and sonarqube fields with your data
